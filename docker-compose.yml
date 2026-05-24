@@ -3,6 +3,8 @@ services:
     image: ghcr.io/firstof9/robust:latest
     container_name: robust-server
     restart: unless-stopped
+    # Run as a non-root user (match your host user's UID and GID to avoid permission issues)
+    user: "1000:1000"
     ports:
       - "8003:8003/tcp"
     environment:
@@ -20,6 +22,8 @@ services:
     image: ghcr.io/firstof9/sim:latest
     container_name: sim-server
     restart: unless-stopped
+    # Run as a non-root user (match your host user's UID and GID to avoid permission issues)
+    user: "1000:1000"
     ports:
       - "9000:9000/tcp"
       - "9000-9005:9000-9005/udp"
