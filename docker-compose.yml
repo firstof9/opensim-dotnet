@@ -1,0 +1,38 @@
+services:
+  robust:
+    image: ghcr.io/firstof9/robust:latest
+    container_name: robust-server
+    restart: unless-stopped
+    ports:
+      - "8003:8003/tcp"
+    environment:
+      - TZ=UTC # Replace with your local timezone, e.g., America/Phoenix
+      # DOTNET_GCConserveMemory specifies the Garbage Collector memory conservation level (1-9, where 9 is most aggressive).
+      - DOTNET_GCConserveMemory=4
+      # DOTNET_GCHighMemPercent specifies the GC memory limit high threshold percent in hexadecimal (0x4B = 75 in decimal).
+      - DOTNET_GCHighMemPercent=4B
+    volumes:
+      - ./config/Robust.ini:/home/opensim/opensim/bin/Robust.ini:ro
+      - ./config/GridCommon.ini:/home/opensim/opensim/bin/config-include/GridCommon.ini:ro
+      - ./fsassets:/home/opensim/opensim/bin/fsassets
+
+  sim:
+    image: ghcr.io/firstof9/sim:latest
+    container_name: sim-server
+    restart: unless-stopped
+    ports:
+      - "9000:9000/tcp"
+      - "9000-9005:9000-9005/udp"
+    environment:
+      - TZ=UTC # Replace with your local timezone, e.g., America/Phoenix
+      # DOTNET_GCConserveMemory specifies the Garbage Collector memory conservation level (1-9, where 9 is most aggressive).
+      - DOTNET_GCConserveMemory=4
+      # DOTNET_GCHighMemPercent specifies the GC memory limit high threshold percent in hexadecimal (0x4B = 75 in decimal).
+      - DOTNET_GCHighMemPercent=4B
+    volumes:
+      - ./config/Regions.ini:/home/opensim/opensim/bin/Regions/Regions.ini:ro
+      - ./config/OpenSim.ini:/home/opensim/opensim/bin/OpenSim.ini:ro
+      - ./config/GridCommon.ini:/home/opensim/opensim/bin/config-include/GridCommon.ini:ro
+      - ./persistence:/home/opensim/opensim/bin/persistence
+      # Commented path for importing/exporting OAR/IAR files
+      # - ./imports:/home/opensim/opensim/bin/imports
