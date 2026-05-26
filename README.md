@@ -34,6 +34,7 @@ opensim-dotnet/
 
 Before starting the containers, pre-create the host directories and configuration file placeholders. If you do not create them first, Docker Compose will create them automatically as directories owned by `root`, resulting in permission errors.
 
+### Standard Linux Setup
 Run the following commands in the root of your project directory:
 
 ```bash
@@ -43,6 +44,24 @@ mkdir -p config persistence fsassets
 # Create empty configuration placeholders (which you will populate)
 touch config/Robust.ini config/OpenSim.ini config/Regions.ini config/GridCommon.ini
 ```
+
+### UGreen NAS (UGOS / UGOS Pro) Setup
+If you are deploying on a UGreen NAS:
+1. **Directory Location:** The persistent directories should be created inside your shared `docker` folder, typically located at `/volume1/docker/` (e.g., `/volume1/docker/opensim-dotnet/`).
+2. **Setup via SSH:**
+   Connect to your NAS via SSH, navigate to your docker directory, and run the setup commands:
+   ```bash
+   cd /volume1/docker/
+   mkdir -p opensim-dotnet/config opensim-dotnet/persistence opensim-dotnet/fsassets
+   cd opensim-dotnet
+   touch config/Robust.ini config/OpenSim.ini config/Regions.ini config/GridCommon.ini
+   ```
+3. **Setup via File Manager:**
+   If you prefer using the File Manager GUI:
+   - Open **File Manager** and navigate to your `docker` shared folder.
+   - Create a folder named `opensim-dotnet`.
+   - Inside `opensim-dotnet`, create three folders: `config`, `persistence`, and `fsassets`.
+   - **Crucial:** You must create empty files named `Robust.ini`, `OpenSim.ini`, `Regions.ini`, and `GridCommon.ini` inside the `config` folder. Since the UGOS File Manager does not support direct file creation, create empty text files on your local computer with these exact names (ensuring there is no hidden `.txt` extension) and upload them to the `config/` directory. If you skip this, Docker will create them as directories during deployment, causing startup failures.
 
 ---
 
