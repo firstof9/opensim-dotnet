@@ -84,6 +84,7 @@ Tailor the following mounted files and directories to your grid layout:
 
 ## Orchestration (Docker Compose)
 
+### Standard Docker Compose
 Spin up both services with the provided `docker-compose.yml` file:
 
 ```yaml
@@ -128,6 +129,57 @@ services:
       - ./config/GridCommon.ini:/home/opensim/opensim/bin/config-include/GridCommon.ini:ro
       - ./persistence:/home/opensim/opensim/bin/persistence
       # - ./imports:/home/opensim/opensim/bin/imports
+```
+
+### UGreen NAS Docker Compose
+For deployments using the UGreen NAS Container Manager interface or SSH, relative volume paths (e.g., `./config/`) may not resolve correctly or can cause permission/startup errors. Use absolute paths pointing to your shared `docker` folder on the NAS (typically `/volume1/docker/opensim-dotnet/`).
+
+Additionally, ensure the `user` GID/UID matches the NAS user who owns the folders (which you can check by running `id` via SSH).
+
+Here is the tailored `docker-compose.yml` for UGreen NAS:
+
+```yaml
+services:
+  robust:
+    image: ghcr.io/firstof9/robust:latest
+    container_name: robust-server
+    restart: unless-stopped
+    # Run as your NAS user (replace with your UID:GID, e.g. 1000:1000 or 1001:1001)
+    user: "1000:1000"
+    ports:
+      - "8003:8003/tcp"
+    environment:
+      - TZ=UTC # Replace with your local timezone, e.g., America/Phoenix
+      # DOTNET_GCConserveMemory specifies the Garbage Collector memory conservation level (1-9, where 9 is most aggressive).
+      - DOTNET_GCConserveMemory=4
+      # DOTNET_GCHighMemPercent specifies the GC memory limit high threshold percent in hexadecimal (0x4B = 75 in decimal).
+      - DOTNET_GCHighMemPercent=4B
+    volumes:
+      - /volume1/docker/opensim-dotnet/config/Robust.ini:/home/opensim/opensim/bin/Robust.ini:ro
+      - /volume1/docker/opensim-dotnet/config/GridCommon.ini:/home/opensim/opensim/bin/config-include/GridCommon.ini:ro
+      - /volume1/docker/opensim-dotnet/fsassets:/home/opensim/opensim/bin/fsassets
+
+  sim:
+    image: ghcr.io/firstof9/sim:latest
+    container_name: sim-server
+    restart: unless-stopped
+    # Run as your NAS user (replace with your UID:GID, e.g. 1000:1000 or 1001:1001)
+    user: "1000:1000"
+    ports:
+      - "9000:9000/tcp"
+      - "9000-9005:9000-9005/udp"
+    environment:
+      - TZ=UTC # Replace with your local timezone, e.g., America/Phoenix
+      # DOTNET_GCConserveMemory specifies the Garbage Collector memory conservation level (1-9, where 9 is most aggressive).
+      - DOTNET_GCConserveMemory=4
+      # DOTNET_GCHighMemPercent specifies the GC memory limit high threshold percent in hexadecimal (0x4B = 75 in decimal).
+      - DOTNET_GCHighMemPercent=4B
+    volumes:
+      - /volume1/docker/opensim-dotnet/config/Regions.ini:/home/opensim/opensim/bin/Regions/Regions.ini:ro
+      - /volume1/docker/opensim-dotnet/config/OpenSim.ini:/home/opensim/opensim/bin/OpenSim.ini:ro
+      - /volume1/docker/opensim-dotnet/config/GridCommon.ini:/home/opensim/opensim/bin/config-include/GridCommon.ini:ro
+      - /volume1/docker/opensim-dotnet/persistence:/home/opensim/opensim/bin/persistence
+      # - /volume1/docker/opensim-dotnet/imports:/home/opensim/opensim/bin/imports
 ```
 
 Run the stack in the background:
